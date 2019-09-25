@@ -7,9 +7,16 @@
 *.cof
 *.fct
 *.map
+*.txt
 
 # ignore temp folders
 01_LED_OnOff/Exe/
 01_LED_OnOff/Linker/
 01_LED_OnOff/List/
 01_LED_OnOff/Obj
+
+02_LED_Patterns/Exe/
+02_LED_Patterns/Linker/
+02_LED_Patterns/List/
+02_LED_Patterns/Obj
+
