@@ -1,3 +1,14 @@
+# ignore all temp files
+*.c~
+*.prj~
+
+# ignore all unnecessary files
+*.cci
+*.cof
+*.fct
+*.map
+
+# ignore temp folders
 01_LED_OnOff/Exe/
 01_LED_OnOff/Linker/
 01_LED_OnOff/List/

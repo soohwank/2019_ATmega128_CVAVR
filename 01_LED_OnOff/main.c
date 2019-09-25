@@ -22,19 +22,20 @@ Data Stack size         : 1024
 *****************************************************/
 
 #include <mega128.h>
+#include <delay.h>
 
 // Declare your global variables here
 
-void main(void)
+void setup_ATmega128(void)
 {
 // Declare your local variables here
 
 // Input/Output Ports initialization
 // Port A initialization
-// Func7=In Func6=In Func5=In Func4=In Func3=In Func2=In Func1=In Func0=In 
-// State7=T State6=T State5=T State4=T State3=T State2=T State1=T State0=T 
-PORTA=0x00;
-DDRA=0x00;
+// Func7=Out Func6=Out Func5=Out Func4=Out Func3=Out Func2=Out Func1=Out Func0=Out 
+// State7=F State6=F State5=F State4=F State3=F State2=F State1=F State0=F 
+PORTA=0xFF;
+DDRA=0xFF;
 
 // Port B initialization
 // Func7=In Func6=In Func5=In Func4=In Func3=In Func2=In Func1=In Func0=In 
@@ -42,11 +43,12 @@ DDRA=0x00;
 PORTB=0x00;
 DDRB=0x00;
 
+// LEDs
 // Port C initialization
-// Func7=In Func6=In Func5=In Func4=In Func3=In Func2=In Func1=In Func0=In 
+// Func7=Out Func6=Out Func5=Out Func4=Out Func3=Out Func2=Out Func1=Out Func0=Out 
 // State7=T State6=T State5=T State4=T State3=T State2=T State1=T State0=T 
-PORTC=0x00;
-DDRC=0x00;
+PORTC=0xFF;
+DDRC=0xFF;
 
 // Port D initialization
 // Func7=In Func6=In Func5=In Func4=In Func3=In Func2=In Func1=In Func0=In 
@@ -188,10 +190,27 @@ SPCR=0x00;
 // TWI initialization
 // TWI disabled
 TWCR=0x00;
+}
 
-while (1)
-      {
-      // Place your code here
+#define LED PORTC
 
-      }
+void main()
+{
+    // [1] Set up ATmega128
+    setup_ATmega128(); 
+       
+    while (1)
+    {
+        // Turn all LEDs on
+        LED = 0x00;
+        
+        // sleep
+        delay_ms(500);
+        
+        // Turn all LEDs off
+        LED = 0xFF;
+        
+        // sleep
+        delay_ms(100);
+    }
 }
