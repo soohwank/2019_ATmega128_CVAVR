@@ -240,7 +240,12 @@ void main()
         
         case 2:
             // LED bits
-            
+//            for (n = 0; n < 256; n++)
+//            {
+//                LED = ~n;
+//                delay_ms(200);
+//            } 
+                        
             // for each number
             for (n = 0; n < 256; n++)
             {
