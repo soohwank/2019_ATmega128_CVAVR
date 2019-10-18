@@ -14,6 +14,6 @@
 void reset_TM1638();
 void FND(unsigned char index, unsigned char data);
 void LED(unsigned char index, unsigned char on_off);
-unsigned char letter2byte(char c);
+unsigned char char2byte(char c);
 
 #endif // _TM1638_H_

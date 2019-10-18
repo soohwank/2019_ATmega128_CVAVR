@@ -195,7 +195,7 @@ TWCR=0x00;
 
 void main()
 {
-    int i, n;
+    int i = 0, n = 0;
     int length = 20;
     char msg[20] = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                     'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd'};
@@ -205,15 +205,26 @@ void main()
     
     // reset TM1638
     reset_TM1638();
-    
+
+    FND(0, char2byte('a'));      
+    FND(1, char2byte('b'));      
+    FND(2, char2byte('c'));      
+    FND(3, char2byte('d'));      
+    FND(4, char2byte('e'));      
+    FND(5, char2byte('f'));      
+    FND(6, char2byte('g'));      
+    FND(7, char2byte('h')); 
+    delay_ms(10000);  
+       
     while (1)
-    {       
+    {   
+        // for each FND,                
         for (i = 0; i < 8; i++)
         {
-            FND(i, letter2byte(msg[(n+i)%length]));        
+            FND(i, char2byte(msg[(n+i)%length]));        
         }        
         
-        delay_us(10);
+        delay_us(100);
         n = (n + 1)%length;
     }
 }

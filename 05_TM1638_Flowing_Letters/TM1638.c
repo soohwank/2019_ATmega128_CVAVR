@@ -26,7 +26,7 @@ unsigned char DIGIT_2_SEVEN_SEGMENT_DISPLAY[10] = {
    0x6F  // 9
 };
 
-unsigned char letter2byte(char c)
+unsigned char char2byte(char c)
 {
     switch(c)
     {
@@ -143,10 +143,7 @@ void FND(unsigned char index, unsigned char data)
     
     // index in [0, 7]
     index = index > 7 ? 7 : index;  
-    
-    // digit in [0, 9]
-    //digit = digit > 9 ? 9 : digit;
-    
+      
     // Mode: fixed address
     
     // [1] Set data command
