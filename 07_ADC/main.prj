@@ -352,7 +352,7 @@ Row=0
 Column=0
 ScrollPosX=0
 ScrollPosY=0
-TimeStamp=1331143232
+TimeStamp=1331148950
 [Bookmarks3]
 TimeStamp=1331143205
 Row=267
@@ -369,8 +369,6 @@ BK6=-1
 BK7=-1
 BK8=-1
 BK9=-1
-[FoldedCode3]
-Blocks=0
 [Bookmarks4]
 TimeStamp=1331142918
 Row=64
@@ -387,8 +385,6 @@ BK6=-1
 BK7=-1
 BK8=-1
 BK9=-1
-[FoldedCode4]
-Blocks=0
 [Bookmarks5]
 TimeStamp=1331134743
 Row=0
@@ -405,8 +401,6 @@ BK6=-1
 BK7=-1
 BK8=-1
 BK9=-1
-[FoldedCode5]
-Blocks=0
 [Bookmarks6]
 TimeStamp=982408964
 Row=81
@@ -423,8 +417,6 @@ BK6=-1
 BK7=-1
 BK8=-1
 BK9=-1
-[FoldedCode6]
-Blocks=0
 [Bookmarks7]
 TimeStamp=1331141858
 Row=9
@@ -441,5 +433,13 @@ BK6=-1
 BK7=-1
 BK8=-1
 BK9=-1
+[FoldedCode3]
+Blocks=0
+[FoldedCode4]
+Blocks=0
+[FoldedCode5]
+Blocks=0
+[FoldedCode6]
+Blocks=0
 [FoldedCode7]
 Blocks=0

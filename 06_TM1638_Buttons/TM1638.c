@@ -1,5 +1,3 @@
-#include <stdint.h>
-
 #include <mega128.h>
 #include <delay.h>
 #include "TM1638.h"
@@ -16,29 +14,72 @@
 #define DISPLAY_COMMAND_DISPLAY_OFF 0x80
 #define DISPLAY_COMMAND_DISPLAY_ON  0x8F
 
-unsigned char DIGIT_2_SEVEN_SEGMENT_DISPLAY[20] = {
-   0x3F, // 0
-   0x06, // 1
-   0x5B, // 2
-   0x4F, // 3
-   0x66, // 4
-   0x6D, // 5
-   0x7D, // 6
-   0x07, // 7
-   0x7F, // 8
-   0x6F, // 9
-   
-   0xBF, // 0.
-   0x86, // 1.
-   0xDB, // 2.
-   0xCF, // 3.
-   0xE6, // 4.
-   0xED, // 5.
-   0xFD, // 6.
-   0x87, // 7.
-   0xFF, // 8.
-   0xEF  // 9.
-};
+uint8_t digit2byte(uint8_t n)
+{
+    switch(n)
+    {
+        case 0: return 0x3F; // 0
+        case 1: return 0x06; // 1
+        case 2: return 0x5B; // 2
+        case 3: return 0x4F; // 3
+        case 4: return 0x66; // 4
+        case 5: return 0x6D; // 5
+        case 6: return 0x7D; // 6
+        case 7: return 0x07; // 7
+        case 8: return 0x7F; // 8
+        case 9: return 0x6F; // 9   
+        
+        case 10: return 0xBF; // 0.
+        case 11: return 0x86; // 1.
+        case 12: return 0xDB; // 2.
+        case 13: return 0xCF; // 3.
+        case 14: return 0xE6; // 4.
+        case 15: return 0xED; // 5.
+        case 16: return 0xFD; // 6.
+        case 17: return 0x87; // 7.
+        case 18: return 0xFF; // 8.
+        case 19: return 0xEF; // 9.        
+    }
+    return 0;
+}
+
+uint8_t char2byte(char c)
+{
+    switch(c)
+    {
+    case ' ':           return 0x00;
+    case 'a': case 'A': return 0x77;
+    case 'b': case 'B': return 0x7C;
+    case 'c':           return 0x58;
+    case 'C':           return 0x39;
+    case 'd': case 'D': return 0x5E;
+    case 'e': case 'E': return 0x79;
+    case 'f': case 'F': return 0x71;
+    case 'g': case 'G': return 0x3D;
+    case 'h':           return 0x74;
+    case 'H':           return 0x76;
+    case 'i': case 'I': return 0x30;
+    case 'j': case 'J': return 0x1E;    
+    case 'k': case 'K': return 0x00; // nO    
+    case 'l': case 'L': return 0x38;    
+    case 'm': case 'M': return 0x00; // nO  
+    case 'n': case 'N': return 0x54;
+    case 'o':           return 0x5C;
+    case 'O':           return 0x3F;
+    case 'p': case 'P': return 0x73;
+    case 'q': case 'Q': return 0x67;
+    case 'r': case 'R': return 0x50;
+    case 's': case 'S': return 0x6D;
+    case 't': case 'T': return 0x78;
+    case 'u':           return 0x1C;
+    case 'U':           return 0x3E;
+    case 'v': case 'V': return 0x00; // nO     
+    case 'w': case 'W': return 0x00; // nO    
+    case 'x': case 'X': return 0x00; // nO  
+    case 'y': case 'Y': return 0x6E;
+    case 'z': case 'Z': return 0x00; // nO
+    }
+}
 
 // Shifts out a byte of data one bit at a time.
 // Starts from the least (rightmost) significant bit.
@@ -71,20 +112,47 @@ void shiftOut(unsigned char value)
     }
 }
 
-unsigned char shiftIn()
+void sendCommand(uint8_t command)
+{
+    STB = LOW;
+    shiftOut(command);
+    STB = HIGH;
+}
+
+void sendCommandAndData(uint8_t command, uint8_t data)
+{
+    STB = LOW;
+    shiftOut(command);
+    shiftOut(data);
+    STB = HIGH;
+}
+
+void sendCommandAndAllZeroData(uint8_t command)
+{
+    int i;
+    STB = LOW;
+    shiftOut(command);
+    for(i = 0; i < 16; i++)
+    {
+        shiftOut(0x00);
+    }  
+    STB = HIGH;
+}
+
+uint8_t shiftIn()
 {
     // return variable
-    unsigned char data = 0;
+    uint8_t data = 0;
     
     // temporary variables
-    int i;
+    uint8_t i, b;
     
     // change DIO pin to input and enable pull-up
     DDR &= ~DIO_BIT;
     PORT |= DIO_BIT; // DIO = HIGH;
     
     // for each bit from the least significant bit (rightmost),
-    for (i = 0; i < 8; i++)
+    for (i = 0, b = 1; i < 8; i++, b <<= 1)
     {              
         // clock low
         CLK = LOW; 
@@ -93,7 +161,7 @@ unsigned char shiftIn()
         delay_us(1);
         
         // read
-        if (PIN & DIO_BIT) data |= 1 << i;   
+        if (PIN & DIO_BIT) data |= b;   
                 
         // clock high
         CLK = HIGH;             
@@ -106,140 +174,20 @@ unsigned char shiftIn()
     return data;
 }
 
-void sendCommand(unsigned char command)
+uint8_t readButtons()
 {
-    STB = LOW;
-    shiftOut(command);
-    STB = HIGH;
-}
-
-void sendCommandAndData(unsigned char command, unsigned char data)
-{
-    STB = LOW;
-    shiftOut(command);
-    shiftOut(data);
-    STB = HIGH;
-}
-
-void sendCommandAndAllZeroData(unsigned char command)
-{
-    int i;
-    STB = LOW;
-    shiftOut(command);
-    for(i = 0; i < 16; i++)
-    {
-        shiftOut(0x00);
-    }  
-    STB = HIGH;
-}
-
-unsigned char readButtons()
-{
-    unsigned char buttons1 = 0;
-    unsigned char buttons2 = 0;
-    unsigned char buttons3 = 0;
-    unsigned char buttons4 = 0;
-    //unsigned char buttons = 0;
-    uint8_t buttons = 0;
-
-    unsigned char temp;
-    unsigned char K1_1 = 0b00100000;
-    unsigned char K2_1 = 0b01000000;
-    unsigned char K3_1 = 0b10000000;
-    unsigned char K1_2 = 0b00000010;
-    unsigned char K2_2 = 0b00000100;
-    unsigned char K3_2 = 0b00001000;
-    
-    unsigned char K_1 = 0b11100000;
-    unsigned char K_2 = 0b00001110;
-    
-    int i; 
+    uint8_t i; 
+    uint8_t buttons = 0;   
       
     STB = LOW;
     shiftOut(DATA_COMMAND_READ_KEYS);
     delay_us(2);
 
-    //for(i = 0; i < 4; i++)
-    //{
-    //   temp = shiftIn() << i;
-    //   buttons |= temp;
-    //}   
-    
-//    temp = shiftIn();  // KS1, KS5
-//    if (temp) buttons |= 1 << 0; 
-//    if (temp) buttons |= 1 << 4; 
-//
-//    temp = shiftIn();  // KS2, KS6  
-//    if (temp) buttons |= 1 << 1; 
-//    if (temp) buttons |= 1 << 5; 
-//
-//    temp = shiftIn();  // KS3, KS7  
-//    if (temp) buttons |= 1 << 2; 
-//    if (temp) buttons |= 1 << 6; 
-//    
-//    temp = shiftIn();  // KS4, KS8  
-//    if (temp) buttons |= 1 << 3; 
-//    if (temp) buttons |= 1 << 7; 
+    for(i = 0; i < 4; i++)
+    {
+       buttons |= shiftIn() << i;
+    }   
 
-    // change DIO pin to input and enable pull-up
-    //DDR &= ~DIO_BIT;
-    //PORT |= DIO_BIT; // DIO = HIGH;
-
-    temp = shiftIn();  // KS1, KS5
-    if (temp) buttons1 = 0b10001000; 
-
-    temp = shiftIn();  // KS2, KS6  
-    if (temp) buttons2 = 0b01000100; 
-
-    temp = shiftIn();  // KS3, KS7  
-    if (temp) buttons3 = 0b00100010; 
-    
-    temp = shiftIn();  // KS4, KS8  
-    if (temp) buttons4 = 0b00010001; 
-
-    //DDR |= DIO_BIT;
-    //PORT &= ~DIO_BIT; // DIO = LOW; 
-
-    return 0b10001000 | 0b01000100;
-    
-    //return buttons1 | buttons2 | buttons3 | buttons4;
-    return buttons1;
-
-    return buttons;
-    //return temp;
-    
-    // KS1, KS2
-    temp = shiftIn();
-    //buttons |= (temp & K1_1) ? 1 << 0 : 0;  
-    //buttons |= (temp & K1_2) ? 1 << 1 : 0;
-    if (temp & K1_1) buttons |= 1 << 0; 
-    if (temp & K1_2) buttons |= 1 << 1; 
-
-    // KS3, KS4
-    temp = shiftIn();
-    //buttons |= (temp & K1_1) ? 1 << 2 : 0;  
-    //buttons |= (temp & K1_2) ? 1 << 3 : 0;  
-    if (temp & K1_1) buttons |= 1 << 2; 
-    if (temp & K1_2) buttons |= 1 << 3; 
-
-    // KS5, KS6
-    temp = shiftIn();
-    //buttons |= (temp & K1_1) ? 1 << 4 : 0;  
-    //buttons |= (temp & K1_2) ? 1 << 5 : 0;  
-    if (temp & K1_1) buttons |= 1 << 4; 
-    if (temp & K1_2) buttons |= 1 << 5; 
-
-    // KS7, KS8
-    temp = shiftIn();
-    //buttons |= (temp & K1_1) ? 1 << 6 : 0;  
-    //buttons |= (temp & K1_2) ? 1 << 7 : 0;  
-    if (temp & K1_1) buttons |= 1 << 6; 
-    if (temp & K1_2) buttons |= 1 << 7; 
-    
-    STB = HIGH;  
-    
-    buttons = 0xFF;
-    
     return buttons;
 }
 
@@ -257,17 +205,14 @@ void reset_TM1638()
     sendCommand(DISPLAY_COMMAND_DISPLAY_ON);
 }
 
-void FND(unsigned char index, unsigned char digit)
+void FND(uint8_t index, uint8_t data)
 {
     // address of display register
-    unsigned char address_command;
+    uint8_t address_command;
     
     // index in [0, 7]
     index = index > 7 ? 7 : index;  
-    
-    // digit in [0, 19]
-    digit = digit > 19 ? 19 : digit;
-    
+        
     // Mode: fixed address
     
     // [1] Set data command
@@ -275,16 +220,16 @@ void FND(unsigned char index, unsigned char digit)
     
     // [2] Set address command and data
     address_command = ADDRESS_COMMAND_00 + 2*index;
-    sendCommandAndData(address_command, DIGIT_2_SEVEN_SEGMENT_DISPLAY[digit]);
+    sendCommandAndData(address_command, data);
     
     // [3] Set display control command
     sendCommand(DISPLAY_COMMAND_DISPLAY_ON);    
 }
 
-void LED(unsigned char index, unsigned char on_off)
+void LED(uint8_t index, uint8_t on_off)
 {
     // address of display register
-    unsigned char address_command;
+    uint8_t address_command;
    
     // index in [1, 8]
     index = index < 1 ? 1 : index;  
@@ -302,4 +247,3 @@ void LED(unsigned char index, unsigned char on_off)
     // [3] Set display control command
     sendCommand(DISPLAY_COMMAND_DISPLAY_ON);
 }
-

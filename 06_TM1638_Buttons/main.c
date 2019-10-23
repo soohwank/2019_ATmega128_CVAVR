@@ -18,7 +18,7 @@ External RAM size       : 0
 Data Stack size         : 1024
 *****************************************************/
 
-
+#include <stdint.h>
 #include <mega128.h>
 #include <delay.h>
 #include "TM1638.h"
@@ -190,10 +190,89 @@ SPCR=0x00;
 TWCR=0x00;
 }
 
+uint8_t clockDigits[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+int8_t isClockPaused = 0; // 0: normal, 1: pause
+int num = 0;
+int pausedNum = 0;
+
+void increaseClock()
+{
+    num++;
+    
+    // if it is paused, bail
+    if (isClockPaused == 1) return;
+    
+    // increase
+    clockDigits[7]++;
+     
+    // centi-second
+    if (clockDigits[7] == 10) { clockDigits[7] = 0; clockDigits[6]++; }
+    if (clockDigits[6] == 10) { clockDigits[6] = 0; clockDigits[5]++; }
+        
+    // second
+    if (clockDigits[5] == 10) { clockDigits[5] = 0; clockDigits[4]++; }
+    if (clockDigits[4] ==  6) { clockDigits[4] = 0; clockDigits[3]++; }
+
+    // minute
+    if (clockDigits[3] == 10) { clockDigits[3] = 0; clockDigits[2]++; }
+    if (clockDigits[2] ==  6) { clockDigits[2] = 0; clockDigits[1]++; }
+        
+    // hour
+    if (clockDigits[0] != 2 && clockDigits[1] == 10)
+    {
+        clockDigits[1] = 0;
+        clockDigits[0]++;
+    }
+    if (clockDigits[0] == 2 && clockDigits[1] == 4)
+    {
+        clockDigits[1] = 0;
+        clockDigits[0] = 0;
+    }      
+}
+
+void togglePauseClock()
+{
+    // avoid toggle switch chattering 
+    if (num - pausedNum < 30) return;
+    
+    pausedNum = num;
+    isClockPaused = 1 - isClockPaused;
+}
+
+void resetClock()
+{
+    uint8_t i;
+    for(i = 0; i < 8; i++)
+    {
+        clockDigits[i] = 0; 
+    }        
+}
+
+void displayClock()
+{
+    int i;
+    
+    if (isClockPaused && ((num - pausedNum)/30)%2 == 1)
+    {
+        for(i = 0; i < 8; i++)
+        {
+            FND(i, char2byte(' ')); 
+        }    
+    }
+    else
+    {
+        for(i = 0; i < 8; i++)
+        {
+            FND(i, digit2byte(i%2 == 0 ? clockDigits[i] : clockDigits[i]+10)); 
+            //FND(i, digit2byte(clockDigits[i])); 
+        } 
+    }   
+}
+
 void main()
 {
-    int i = 0;
-    unsigned char buttons;
+    uint8_t i;
+    uint8_t buttons;
     
     // setup
     setupATmega128();
@@ -203,15 +282,26 @@ void main()
     
     while (1)
     {
+        // sleep 10ms - 8[FND]*4[ShiftOut/FND]*8[us/ShiftOut]
+        delay_us(10000-8*4*8);
+        
+        // increase clock
+        increaseClock();
+        
+        // display clock
+        displayClock();
+
         // read buttons
         buttons = readButtons();   
-        
-        // LED
+       
+        // display buttons on LED
         for(i = 0; i < 8; i++)
         {
-            LED(8-i, buttons & (1 << i) ? ON : OFF);  
-        }     
+            LED(i+1, buttons & (1<<i) ? ON : OFF);  
+        }
         
-        delay_us(10);
+        // manipulate clock with buttons
+        if (buttons & (1<<7)) resetClock();
+        if (buttons & (1<<6)) togglePauseClock();                   
     }
 }
