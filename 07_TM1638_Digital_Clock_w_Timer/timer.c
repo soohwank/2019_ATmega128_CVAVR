@@ -59,7 +59,7 @@ void init_timer_w_compare()
     #asm("sei")
 }
 
-void init_timer_with_overflow()
+void init_timer_w_overflow()
 {
     // Timer/Counter Control Register 0 - TCCR0
     // Bit 7 - FOC0: Force Output Compare = 0 (no output PWM)

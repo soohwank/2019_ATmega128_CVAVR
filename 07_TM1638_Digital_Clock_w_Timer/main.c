@@ -217,7 +217,7 @@ void main()
 
     // timer
     //init_timer_w_compare();
-    init_timer_with_overflow();
+    init_timer_w_overflow();
     
     while (1)
     {
